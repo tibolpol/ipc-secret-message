@@ -1,0 +1,31 @@
+#!/bin/bash
+# Demonstrate insitu with socat
+
+mydir="$(dirname "$0")"
+myexit() {
+  rc=$1
+  shift
+  echo $myname : rc=$rc - $@ >&2
+  exit $rc
+}
+PATH="$mydir/../src:$PATH"
+
+# Secret part (the OWNER role)
+SECRET="!!!secret!!!"
+
+# Server part (the PROXY role)
+read IPC_QUEUE IPC_QUEUEID IPC_SEM1ID IPC_SEM2ID < <( smq_create.py )
+#{ ipcs -qi "$IPC_QUEUEID" && ipcs -si $IPC_SEM1ID && ipcs -si $IPC_SEM2ID ; } >/dev/null || myexit 8 ipc not started
+socat UNIX-LISTEN:proxy,fork,mode=777 EXEC:"smq_receive.py $IPC_QUEUE "<( #subprocess IPC send
+  while smq_send.py $IPC_QUEUE socat <<< "$(mcrypt -q -k XYZ <<< "$SECRET" | base64 -w0)" ; do : ; done
+  ),stderr &
+trap "ipcrm -q $IPC_QUEUEID -s $IPC_SEM1ID -s $IPC_SEM2ID;kill $!" exit
+#ipcs -sq
+#ls -l proxy
+#ps fuwx
+
+# Client part (the USER role)
+sleep 1
+for i in {1..5};do
+socat - UNIX-CONNECT:proxy |  base64 -d | mdecrypt -q -k XYZ
+done
