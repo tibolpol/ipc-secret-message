@@ -27,5 +27,6 @@ trap "ipcrm -q $IPC_QUEUEID -s $IPC_SEM1ID -s $IPC_SEM2ID;kill $!" exit
 # Client part (the USER role)
 sleep 1
 for i in {1..5};do
-socat - UNIX-CONNECT:proxy |  base64 -d | mdecrypt -q -k XYZ
+#NOTE the strength does not result from crypto, but from the fact that incomplete hash is undecypherable
+socat - UNIX-CONNECT:proxy | tee >(cat >&2) | base64 -d | mdecrypt -q -k XYZ >&2
 done
