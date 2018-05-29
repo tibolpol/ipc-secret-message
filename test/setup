@@ -1,0 +1,3 @@
+#!/bin/bash
+[[ $(id -u) == 0 ]] || { echo must be root >&2 ; exit ; }
+apt-get install socat python-psutil python-sysv-ipc mcrypt

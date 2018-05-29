@@ -1,5 +1,5 @@
 #!/bin/bash
-# Demonstrate insitu with socat
+# Demonstrate in situ with socat
 
 mydir="$(dirname "$0")"
 myexit() {
@@ -27,6 +27,8 @@ trap "ipcrm -q $IPC_QUEUEID -s $IPC_SEM1ID -s $IPC_SEM2ID;kill $!" exit
 # Client part (the USER role)
 sleep 1
 for i in {1..5};do
-#NOTE the strength does not result from crypto, but from the fact that incomplete hash is undecypherable
-socat - UNIX-CONNECT:proxy | tee >(cat >&2) | base64 -d | mdecrypt -q -k XYZ >&2
+# NOTE: the strength does not result from crypto, but from the fact that:
+# - incomplete hash is undecypherable;
+# - untrusted process cannot get complete hash.
+echo USER GOT $(socat - UNIX-CONNECT:proxy | tee >(cat >&2) | base64 -d | mdecrypt -q -k XYZ)
 done
