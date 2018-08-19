@@ -24,4 +24,4 @@ socat UNIX-LISTEN:proxy,fork,mode=777 EXEC:smq_receive queue_id /dev/fd/62,stder
  \_ smq_send queue_id socat
  \_ smq_receive queue_id /dev/fd/62</pre>
 
-No other processes other than the ones forked by socat can read the message, because smq_send verifies the reader parents PPID before delivering the complete message. Stealing peaces to the raw IPC queue is possible but never get the complete message, and a partial message won't be decrypted. The message will be very hard to steal even for root.
+No other processes other than the ones forked by socat can read the message, because smq_send verifies the reader parents PPID before delivering the complete message. Stealing pieces to the raw IPC queue is possible but never get the complete message, and a partial message won't be decrypted. The message will be very hard to steal even for root.
