@@ -30,5 +30,5 @@ for i in {1..5};do
 # NOTE: the strength does not result from crypto, but from the fact that:
 # - incomplete hash is undecypherable;
 # - untrusted process cannot get complete hash.
-echo USER GOT $(socat - UNIX-CONNECT:proxy | tee >(cat >&2) | base64 -d | mdecrypt -q -k XYZ)
+echo USER GOT "$(socat - UNIX-CONNECT:proxy | tee >(cat >&2) | base64 -d | mdecrypt -q -k XYZ)"
 done

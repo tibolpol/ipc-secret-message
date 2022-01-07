@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Receive a message on a secure System-V IPC queue.
 
@@ -16,9 +16,6 @@ from __future__ import  print_function
 from  sys       import  argv, stderr
 from  sysv_ipc  import  MessageQueue, BusyError, Semaphore
 
-def eprint(*args, **kwargs):
-    print(*args, file=stderr, **kwargs)
-
 with Semaphore(int(argv[1])+1) :
   queue = MessageQueue(int(argv[1]))
   try :
@@ -29,7 +26,7 @@ with Semaphore(int(argv[1])+1) :
   
     queue.send(msg1,type=2)
     (msg2, type) = queue.receive(type=1)
-    print(msg1 + msg2)
+    print((msg1 + msg2).decode("ascii"))
   except BusyError :
     queue.send("fake",block=False,type=2)
     raise

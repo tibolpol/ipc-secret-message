@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Send a message on a secure System-V IPC queue.
 
@@ -25,20 +25,18 @@ def eprint(*args, **kwargs):
     print(*args, file=stderr, **kwargs)
 
 # slice msg
-msg = raw_input()
-msg1= msg[0:len(msg)/2]
-msg2= msg[len(msg)/2:len(msg)]
+msg = input()
+msg1= msg[0:int(len(msg)/2)]
+msg2= msg[int(len(msg)/2):len(msg)]
 
 # args
 queue = MessageQueue(int(argv[1]))
 master_name = argv[2]
 
-PSU2 = psutil.version_info >= (2, 0)  # compatibility bw 1.x and 2.x
-
 # master process must be the nearest parent with the exact given name
 master_proc = Process(getpid())
-while (master_proc.name() if PSU2 else master_proc.name) != master_name :
-  master_proc = (master_proc.parent() if PSU2 else master_proc.parent)
+while master_proc.name() != master_name :
+  master_proc = master_proc.parent()
 
 with Semaphore(int(argv[1])) :
   try :
@@ -50,11 +48,11 @@ with Semaphore(int(argv[1])) :
     (echo1, echo_type) = queue.receive(type=2)
     echo_proc = Process(queue.last_send_pid)
   
-    if echo1 == msg1 :
+    if echo1.decode("ascii") == msg1 :
       parent = echo_proc 
       try :
-        while (parent.pid if PSU2 else parent.pid()) != (master_proc.pid if PSU2 else master_proc.pid()) :
-          parent = (parent.parent() if PSU2 else parent.parent)
+        while parent.pid != master_proc.pid :
+          parent = parent.parent()
       except :
         pass
   
@@ -64,7 +62,7 @@ with Semaphore(int(argv[1])) :
   
       # refuse to speak if no common ancestor process
       else :
-        eprint("refused " + format(echo_proc) + " from " + (echo_proc.username() if PSU2 else echo_proc.username))
+        eprint("refused " + format(echo_proc) + " from " + echo_proc.username())
         # clear
         try :
           while True :
@@ -74,7 +72,7 @@ with Semaphore(int(argv[1])) :
   
     # refuse to speak to wrong echo
     else :
-      eprint("refused " + echo1 + " from " + format(echo_proc) + " from " + (echo_proc.username() if PSU2 else echo_proc.username))
+      eprint("received " + echo1.decode("ascii") + " sent " + msg1 + " from " + format(echo_proc) + " from " + echo_proc.username())
       # clear
       try :
         while True :

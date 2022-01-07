@@ -16,13 +16,13 @@ trap "ipcrm -q $IPC_QUEUEID -s $IPC_SEM1ID -s $IPC_SEM2ID;kill $PROXY" exit
 sleep 1
 
 # USER
-for i in {1..30};do echo USER GOT $(socat - UNIX-CONNECT:proxy | base64 -d | mdecrypt -q -k XYZ) ; done &
+for i in {1..30};do echo USER GOT "$(socat - UNIX-CONNECT:proxy | base64 -d | mdecrypt -q -k XYZ)" ; done &
 USER=$!
 
 sleep 1
 
 # ATTACKER
-for i in {1..30};do echo ATTACKER GOT $(smq_receive.py $IPC_QUEUE | base64 -d | mdecrypt -q -k XYZ) ; done &
+for i in {1..30};do echo ATTACKER GOT "$(smq_receive.py $IPC_QUEUE | base64 -d | mdecrypt -q -k XYZ)" ; done &
 ATTACKER=$!
 { sleep 15; kill $ATTACKER ; } &
 
